@@ -59,7 +59,7 @@ public class SortedList<T> {
 
     /**
      * 
-     * inserts the object T into the linked list
+     * inserts the object T into the linked list in sorted order
      * 
      * @param t: the data for the node
      */
@@ -70,7 +70,7 @@ public class SortedList<T> {
             if (Count == 0) {
                 Head = new Node(item);
                 Tail = Head;
-                
+
                 return;
 
             }
@@ -89,13 +89,13 @@ public class SortedList<T> {
                     // the next node is bigger than the new node. put new node here
                     if (Head == currentNode) {
                         newNode.Next = currentNode;
-                        Head = newNode;                        
+                        Head = newNode;
                         break;
                     }
 
-                    newNode.Next = nextNode;      
-                    currentNode.Next = newNode;                                  
-                
+                    newNode.Next = nextNode;
+                    currentNode.Next = newNode;
+
                     break;
                 }
                 currentNode = nextNode; // set current node so that it is one behind next node
@@ -104,17 +104,77 @@ public class SortedList<T> {
             // this means it goes at the tail;
             if (nextNode == null) {
                 Tail.Next = newNode; // old tail references new node
-                Tail = newNode;      // tail is the new node
-                
+                Tail = newNode; // tail is the new node
 
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.toString());
             throw e;
-        } finally{
+        } finally {
             Count++;
-           // DumpList(); Uncomment this is you want to dump the list each time you add somethign to the list
+            // DumpList(); Uncomment this is you want to dump the list each time you add
+            // somethign to the list
         }
+    }
+
+    /**
+     * Remove the first occurence of targetItem from the list, shifting everything
+     * after it up one position. targetItem is considered to be in the list if an
+     * item that is equal to it (using .equals) is in the list. (This convention for
+     * something being in the list should be followed throughout.)
+     * 
+     * @return true if the item was in the list, false otherwise
+     */
+    public boolean remove(T targetItem) {
+        //
+        // if the list is empty, can't remove anything
+        try {
+
+            if (Count == 0)
+                return false;
+
+            Node currentNode = Head;
+            Node nextNode = null;
+            System.console().writer().printf("Before Removing %s\n", targetItem.toString());
+            DumpList();
+            //
+            // loop through all the elements in the list. You start with currentNode
+            // and nextNode referencsing the Head. after the first loop, currentNode
+            // stays referening the head, but
+            for (nextNode = Head; nextNode != null; nextNode = nextNode.Next) {
+                int compare = _comparator.compare(nextNode.Data, targetItem);
+                if (compare == 0) {
+                    if (nextNode == Head) {
+                        Head = currentNode.Next;
+                        currentNode = null;
+
+                    } else {
+
+                        currentNode.Next = nextNode.Next;
+                        if (currentNode.Next == null) {
+                            Tail = currentNode;
+
+                        }
+                    }
+
+                    Count--;
+                    return true;
+
+                }
+                currentNode = nextNode;
+            }
+
+            assert (nextNode == null);
+            return false;
+
+        } catch (Exception e) {
+            System.out.println("exception: " + e.toString());
+            throw e;
+        } finally {
+            System.console().writer().printf("After Removing: %s\n", targetItem.toString());
+            DumpList();
+        }
+
     }
 
     public void DumpList() {
@@ -124,7 +184,7 @@ public class SortedList<T> {
             return;
         }
         System.out.printf("List has %d items\n", this.Count);
-        
+
         System.out.printf("Head: %s Tail: %s\n", Head.Data.toString(), Tail.Data.toString());
 
         for (Node node = Head; node != null; node = node.Next) {
