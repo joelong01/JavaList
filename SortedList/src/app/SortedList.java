@@ -58,64 +58,120 @@ public class SortedList<T> {
     }
 
     /**
+     * returns the Data of the 'index' element.
      * 
-     * inserts the object T into the linked list in sorted order
+     * lots of opportunity to optimize this
+     * 
+     */
+    public T getItem(int index) {
+
+        if (Head == null)
+            throw new IllegalArgumentException("The list has no items");
+
+        Node iterator = Head;
+        for (int i = 0; i < index; i++) {
+            iterator = iterator.Next;
+        }
+        return iterator.Data;
+    }
+
+    /*
+     * Removes all items from the list
+     */
+    public void Clear() {
+        Head = null;
+        Tail = null;
+        Count = 0;
+
+    }
+
+    public int Count() {
+        return this.Count;
+    }
+
+    /**
+     * 
+     * inserts the object T into the linked list in sorted order there are 4
+     * conditions to worry about 1. is the list empty? 2. does the item go at the
+     * Head? 3. does the item go at the Tail? 4. if none of the above, find the item
+     * the new item goes *after*
      * 
      * @param t: the data for the node
+     * @throws Exception
      */
-    public void add(final T item) {
+    public void add(final T item) throws Exception {
+        // System.out.printf("[Adding %s]", item.toString());
+        // DumpList();
 
         try {
 
+            var newNode = new Node(item);
+
+            //
+            // is the list empty?
             if (Count == 0) {
-                Head = new Node(item);
+                Head = newNode;
                 Tail = Head;
-
                 return;
-
             }
 
-            var newNode = new Node(item);
+            //
+            // does it go at the front?
+            if (_comparator.compare(Head.Data, item) <= 0) {
+                newNode.Next = Head;
+                Head = newNode;
+                return;
+            }
+
+            //
+            // does it go at the end?
+
+            if (_comparator.compare(Tail.Data, item) >= 0) {
+                Tail.Next = newNode;
+                Tail = newNode;
+                return;
+            }
+
             Node currentNode = Head;
-            Node nextNode = null;
             //
             // loop through all the elements in the list. You start with currentNode
             // and nextNode referencsing the Head. after the first loop, currentNode
             // stays referening the head, but
-            for (nextNode = Head; nextNode != null; nextNode = nextNode.Next) {
-                int compare = _comparator.compare(nextNode.Data, newNode.Data);
-                if (compare <= 0) {
+            for (Node nextNode = Head.Next; nextNode != null; nextNode = nextNode.Next) {
+                boolean insertNext = isNextNode(nextNode, newNode.Data);
+                if (insertNext) {
                     //
-                    // the next node is bigger than the new node. put new node here
-                    if (Head == currentNode) {
-                        newNode.Next = currentNode;
-                        Head = newNode;
-                        break;
-                    }
-
+                    // we know it goes next. put it there.
                     newNode.Next = nextNode;
                     currentNode.Next = newNode;
-
-                    break;
+                    return;
                 }
+
                 currentNode = nextNode; // set current node so that it is one behind next node
             }
             //
-            // this means it goes at the tail;
-            if (nextNode == null) {
-                Tail.Next = newNode; // old tail references new node
-                Tail = newNode; // tail is the new node
-
-            }
+            // we didn't find a place to insert it!
+            throw new Exception(
+                    "we hould not have gotten to the tail as we checked earler if the new node shoudl be the Tail!");
         } catch (Exception e) {
             System.out.println("exception: " + e.toString());
             throw e;
         } finally {
             Count++;
-            // DumpList(); Uncomment this is you want to dump the list each time you add
-            // somethign to the list
+            DumpList(); // Uncomment this is you want to dump the list each time you add
+            
         }
     }
+
+    private boolean isNextNode(Node node, T data) {
+       
+        int compare = _comparator.compare(node.Data, data);
+        if (compare <= 0)
+            return true;
+        return false;
+    }
+
+    
 
     /**
      * Remove the first occurence of targetItem from the list, shifting everything
@@ -136,7 +192,7 @@ public class SortedList<T> {
             Node currentNode = Head;
             Node nextNode = null;
             System.console().writer().printf("Before Removing %s\n", targetItem.toString());
-            DumpList();
+            // DumpList();
             //
             // loop through all the elements in the list. You start with currentNode
             // and nextNode referencsing the Head. after the first loop, currentNode
@@ -172,7 +228,7 @@ public class SortedList<T> {
             throw e;
         } finally {
             System.console().writer().printf("After Removing: %s\n", targetItem.toString());
-            DumpList();
+            // DumpList();
         }
 
     }
@@ -183,14 +239,15 @@ public class SortedList<T> {
             System.console().writer().println("List is empty\n");
             return;
         }
-        System.out.printf("List has %d items\n", this.Count);
-
-        System.out.printf("Head: %s Tail: %s\n", Head.Data.toString(), Tail.Data.toString());
+        System.out.printf("[Count=%d][Head=%s][Tail=%s] Items: ", this.Count, Head.Data.toString(),
+                Tail.Data.toString());
 
         for (Node node = Head; node != null; node = node.Next) {
 
-            System.console().writer().println(node.Data.toString());
+            System.console().writer().printf("%s,", node.Data.toString());
         }
+        System.out.println("");
+
     }
 
 }
