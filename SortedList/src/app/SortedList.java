@@ -97,16 +97,18 @@ public class SortedList<T> {
      * the new item goes *after*
      * 
      * @param t: the data for the node
-     * @throws Exception
      */
-    public void add(final T item) throws Exception {
+    public void add(final T item)  {
         // System.out.printf("[Adding %s]", item.toString());
         // DumpList();
 
-        try {
+        var newNode = new Node(item);
+        addNode(newNode);
 
-            var newNode = new Node(item);
+    }
 
+    private void addNode(Node newNode)  {
+        try{
             //
             // is the list empty?
             if (Count == 0) {
@@ -117,7 +119,7 @@ public class SortedList<T> {
 
             //
             // does it go at the front?
-            if (_comparator.compare(Head.Data, item) <= 0) {
+            if (_comparator.compare(Head.Data, newNode.Data) <= 0) {
                 newNode.Next = Head;
                 Head = newNode;
                 return;
@@ -126,7 +128,7 @@ public class SortedList<T> {
             //
             // does it go at the end?
 
-            if (_comparator.compare(Tail.Data, item) >= 0) {
+            if (_comparator.compare(Tail.Data, newNode.Data) >= 0) {
                 Tail.Next = newNode;
                 Tail = newNode;
                 return;
@@ -149,16 +151,12 @@ public class SortedList<T> {
 
                 currentNode = nextNode; // set current node so that it is one behind next node
             }
-            //
-            // we didn't find a place to insert it!
-            throw new Exception(
-                    "we hould not have gotten to the tail as we checked earler if the new node shoudl be the Tail!");
+          
         } catch (Exception e) {
-            System.out.println("exception: " + e.toString());
-            throw e;
+            System.out.println("exception: " + e.toString());          
         } finally {
             Count++;
-            DumpList(); // Uncomment this is you want to dump the list each time you add
+          //  DumpList(); // Uncomment this is you want to dump the list each time you add
             
         }
     }
@@ -171,6 +169,99 @@ public class SortedList<T> {
         return false;
     }
 
+    /**
+     * Returns the first position of targetItem in the list.
+     * 
+     * @return the position of the item, or -1 if targetItem is not in the list
+     */
+    public int getPosition(T targetItem) {
+        int pos = 0;
+
+        for (Node nextNode = Head; nextNode != null; nextNode = nextNode.Next) {
+            int compare = _comparator.compare(nextNode.Data, targetItem);
+            if (compare == 0) {
+                return pos;
+            }
+
+            pos++;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the item at a given index.
+     * 
+     * @return the item, or throw an IndexOutOfBoundsException if the index is out
+     *         of bounds.
+     */
+    public T get(int position) {
+        if (position >= Count || position < 0)
+            throw new IndexOutOfBoundsException();
+        Node node = Head;
+        for (int i = 0; i < position; i++) {
+            node = node.Next;
+        }
+        return node.Data;
+
+    }
+
+    /**
+     * Returns true if the list contains
+     * 
+     * 
+     * Re-sorts the list ac ording to the given comparator. All future insertions
+     * should add in the order specified by this comparator.
+     */
+    public void resort(Comparator<T> comparator) {
+
+        if (Count == 0 || Count == 1) return;
+        
+        //
+        //  setting Count to 0 makes the AddNode() reset Head and Tail
+        Count = 0;
+
+        _comparator = comparator;
+        Node currentNode = Head;
+        Node nextNode = Head.Next;
+        while (currentNode != null) {            
+        
+            currentNode.Next = null;    // we have to set Next to null so that addNode terminates the loop correctly
+            addNode(currentNode);
+            currentNode = nextNode;
+            if (currentNode != null) nextNode = nextNode.Next; // it'd be nice to get rid of the if statement somehow via more clever looping
+        }
+
+    }
+
+    /** Returns the length of the list: the number of items stored in it. */
+    public int size() {
+        return Count;
+    }
+
+    /** Returns true if the list has no items stored in it. */
+    public boolean isEmpty() {
+        return Count == 0;
+    }
+
+    /**
+     * Returns an array version of the list. Note that, for technical reasons, the
+     * type of the items contained in the list can't be communicated properly to the
+     * caller, so an array of Objects gets returned.
+     * 
+     * @return an array of length length(), with the same items in it as are stored
+     *         in the list, in the same order.
+     */
+    public Object[] toArray() {
+        var objArray = new Object[Count];
+        Node node = Head;
+        for (int i=0; i<Count; i++)
+        {
+            objArray[i] = node.Data;
+            node = node.Next;
+        }
+        return objArray;
+        
+    }
     
 
     /**
@@ -231,6 +322,7 @@ public class SortedList<T> {
             // DumpList();
         }
 
+        
     }
 
     public void DumpList() {

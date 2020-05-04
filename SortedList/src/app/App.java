@@ -5,7 +5,7 @@ import java.util.Random;
 public class App {
     public static void main(String[] args) throws Exception {
 
-        SortedList<Integer> list = new SortedList<Integer>(new IntegerComparer());
+        SortedList<Integer> list = new SortedList<Integer>(new AscendingIntegerComparer());
 
         long startTime;
         long endTime;
@@ -23,9 +23,17 @@ public class App {
         }
         endTime = System.nanoTime();
         durationMs = (endTime - startTime) / 1000000;
-        valid = TestList(list);
+        valid = TestList(list, true);
         DumpFirstItems(100, list, valid);
         System.out.printf("\nAdd %d items in normal way took took %d ms\n\n", itemCount, durationMs);
+
+        // resort
+        System.out.printf("Resorting %d items  ...\n", itemCount);
+        startTime = System.nanoTime();
+        list.resort(new DescendingIntegerComparer());
+        valid = TestList(list, false);
+        DumpFirstItems(100, list, valid);
+        System.out.printf("\nResorting %d items took took %d ms\n\n", itemCount, durationMs);
 
         // add 10,000 items from big to little to the front this should be fast
         System.out.println("Starting Adding from largest to smallest using add()...");
@@ -36,7 +44,7 @@ public class App {
         }
         endTime = System.nanoTime();
         durationMs = (endTime - startTime) / 1000000;
-        valid = TestList(list);
+        valid = TestList(list, false);
         DumpFirstItems(100, list, valid);
         System.out.printf("\nreverse order took %d ms\n\n", durationMs);
 
@@ -52,10 +60,21 @@ public class App {
         }
         endTime = System.nanoTime();
         durationMs = (endTime - startTime) / 1000000;
-        valid = TestList(list);
+        valid = TestList(list, false);
         DumpFirstItems(100, list, valid);
         // list.DumpList();
         System.out.printf("\nadd random numbers using .add() took %d ms\n\n", durationMs);
+
+        System.out.printf("converting %d items to an array ...\n", itemCount);
+        startTime = System.nanoTime();
+        var array = list.toArray();
+        System.out.print("Array contents: ");
+        for (int i = 0; i < array.length; i++) {
+            System.out.printf("%d,", array[i]);
+        }
+        System.out.printf("\ntoArray took %d ms\n\n", durationMs);
+       
+        
 
     }
 
@@ -66,13 +85,14 @@ public class App {
         }
     }
 
-    private static boolean TestList(SortedList<Integer> list) {
-        int val = -Integer.MAX_VALUE;
+    private static boolean TestList(SortedList<Integer> list, boolean ascending) {
+        int val = (ascending) ? -Integer.MAX_VALUE : Integer.MAX_VALUE;
         for (int i = 0; i < list.Count(); i++) {
             int itemVal = list.getItem(i);
-            if (val > itemVal) {
+            if ((ascending && val > itemVal) || (!ascending && val < itemVal)) {
 
-                System.out.printf("the item at position %d has value %d which is > than %d ", i, itemVal, val);
+                System.out.printf("the item at position %d has value %d which is %s than %d ", i, itemVal,
+                        ascending ? ">" : "<", itemVal);
                 return false;
             }
             val = itemVal;
