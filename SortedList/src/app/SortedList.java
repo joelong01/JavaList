@@ -57,24 +57,6 @@ public class SortedList<T> {
         this._comparator = comparator;
     }
 
-    /**
-     * returns the Data of the 'index' element.
-     * 
-     * lots of opportunity to optimize this
-     * 
-     */
-    public T getItem(int index) {
-
-        if (Head == null)
-            throw new IllegalArgumentException("The list has no items");
-
-        Node iterator = Head;
-        for (int i = 0; i < index; i++) {
-            iterator = iterator.Next;
-        }
-        return iterator.Data;
-    }
-
     /*
      * Removes all items from the list
      */
@@ -98,7 +80,7 @@ public class SortedList<T> {
      * 
      * @param t: the data for the node
      */
-    public void add(final T item)  {
+    public void add(final T item) {
         // System.out.printf("[Adding %s]", item.toString());
         // DumpList();
 
@@ -107,8 +89,8 @@ public class SortedList<T> {
 
     }
 
-    private void addNode(Node newNode)  {
-        try{
+    private void addNode(Node newNode) {
+        try {
             //
             // is the list empty?
             if (Count == 0) {
@@ -151,18 +133,18 @@ public class SortedList<T> {
 
                 currentNode = nextNode; // set current node so that it is one behind next node
             }
-          
+
         } catch (Exception e) {
-            System.out.println("exception: " + e.toString());          
+            System.out.println("exception: " + e.toString());
         } finally {
             Count++;
-          //  DumpList(); // Uncomment this is you want to dump the list each time you add
-            
+            // DumpList(); // Uncomment this is you want to dump the list each time you add
+
         }
     }
 
     private boolean isNextNode(Node node, T data) {
-       
+
         int compare = _comparator.compare(node.Data, data);
         if (compare <= 0)
             return true;
@@ -205,30 +187,42 @@ public class SortedList<T> {
 
     }
 
+    /** Returns true if the list contains the target item. */
+    public boolean contains(T targetItem){
+        if (Count == 0) return false;
+
+        for (Node node = Head; node != null; node = node.Next) {
+             if (_comparator.compare(targetItem, node.Data) == 0){
+                return true;
+             }
+        }
+        return false;
+    }
+
     /**
-     * Returns true if the list contains
-     * 
      * 
      * Re-sorts the list ac ording to the given comparator. All future insertions
      * should add in the order specified by this comparator.
      */
     public void resort(Comparator<T> comparator) {
 
-        if (Count == 0 || Count == 1) return;
-        
+        if (Count == 0 || Count == 1)
+            return;
+
         //
-        //  setting Count to 0 makes the AddNode() reset Head and Tail
+        // setting Count to 0 makes the AddNode() reset Head and Tail
         Count = 0;
 
         _comparator = comparator;
         Node currentNode = Head;
         Node nextNode = Head.Next;
-        while (currentNode != null) {            
-        
-            currentNode.Next = null;    // we have to set Next to null so that addNode terminates the loop correctly
+        while (currentNode != null) {
+
+            currentNode.Next = null; // we have to set Next to null so that addNode terminates the loop correctly
             addNode(currentNode);
             currentNode = nextNode;
-            if (currentNode != null) nextNode = nextNode.Next; // it'd be nice to get rid of the if statement somehow via more clever looping
+            if (currentNode != null)
+                nextNode = nextNode.Next; // it'd be nice to get rid of the if statement somehow via more clever looping
         }
 
     }
@@ -254,15 +248,13 @@ public class SortedList<T> {
     public Object[] toArray() {
         var objArray = new Object[Count];
         Node node = Head;
-        for (int i=0; i<Count; i++)
-        {
+        for (int i = 0; i < Count; i++) {
             objArray[i] = node.Data;
             node = node.Next;
         }
         return objArray;
-        
+
     }
-    
 
     /**
      * Remove the first occurence of targetItem from the list, shifting everything
@@ -322,7 +314,6 @@ public class SortedList<T> {
             // DumpList();
         }
 
-        
     }
 
     public void DumpList() {
